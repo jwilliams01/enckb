@@ -129,7 +129,7 @@ $variables.each_pair do |name, value|
 end
 
 puts "\n=== Rules Fired ==="
-rules.each do |rule|
-  puts "rule \"#{rule['ruleName']}\" #{rule['fired']}"
+rules.each { |rule| puts "#{rule['ruleName']}" if rule['fired'] == 'fired' }
 
-end
+puts "\n=== Rules Not Fired ==="
+rules.each { |rule| puts "#{rule['ruleName']}" if rule['fired'] == 'not fired' }
