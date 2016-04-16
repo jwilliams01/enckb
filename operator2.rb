@@ -19,6 +19,16 @@ class Operator
   end
 end
 
+class DeclareOperator < Operator
+  def self.evaluate(variables)
+    if variables.instance_of? Array
+      variables.each {|variable| $variables[variable] = nil}
+    else
+      $variable[variables] = nil
+    end
+  end
+end
+
 class LiteralOperator < Operator
   def self.evaluate(literal)
     value = literal
@@ -29,21 +39,6 @@ class VariableOperator < Operator
   def self.evaluate(variable)
     value = ($variables.key? variable) ? $variables[variable] : nil
   end
-end
-
-class ExprOperator < Operator
-
-  def self.evaluate(args)
-    value = nil
-    case args['entity']
-    when 'variable'
-      value = ($variables.key? args['name']) ? $variables[args['name']] : nil
-    when 'literal'
-      value = args['value']
-    end
-    value
-  end
-
 end
 
 class SetOperator < Operator
@@ -57,6 +52,21 @@ class SetOperator < Operator
 end
 
 class StartsWithOperator < Operator
+  def self.evaluate(args)
+    value = nil
+    targetValue = nil
+    args['target'].each_pair { |op, ar| targetValue = self.evaluateExpr(op, ar) }
+    if targetValue != nil
+      value = false
+      args['values'].each do |v|
+        v.each_pair do |op, ar| 
+          matchValue = self.evaluateExpr(op, ar)
+          value |= targetValue.start_with?(matchValue)
+        end
+      end
+    end
+    value
+  end
 end
 
 class EndsWithOperator < Operator
@@ -81,9 +91,9 @@ class MatchesOperator < Operator
 end
 
 $operators = {
+  "declare" => DeclareOperator,
   "literal" => LiteralOperator,
   "variable" => VariableOperator,
-  "expr" => ExprOperator,
   "set" => SetOperator,
   "startsWith" => StartsWithOperator,
   "endsWith" => EndsWithOperator,
